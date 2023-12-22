@@ -78,13 +78,15 @@ async def login(client: Client) -> Optional[RedirectResponse]:
 
     # Function to attempt login after checking credentials and hCaptcha
     async def try_login() -> None:
-        if passwords.get(username.value) == password.value:
-            captcha_passed = await check_captcha()
-            if captcha_passed:
-                app.storage.user.update({"username": username.value, "authenticated": True})
-                ui.open(app.storage.user.get("referrer_path", "/"))  # Go back to where the user wanted to go
+        captcha_passed = await check_captcha()
+        if captcha_passed:
+            if passwords.get(username.value) == password.value:
+                    app.storage.user.update({"username": username.value, "authenticated": True})
+                    ui.open(app.storage.user.get("referrer_path", "/"))  # Go back to where the user wanted to go
+            else:
+                ui.notify("Wrong username or password", color="negative")
         else:
-            ui.notify("Wrong username or password", color="negative")
+            ui.notify("Captcha not passed", color="negative")
 
     # If already authenticated, redirect to the main page
     if app.storage.user.get("authenticated", False):
